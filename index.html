@@ -18,7 +18,9 @@
     <h1>Mag Hex Generator</h1>
     <div class="input-group">
         <label for="mag">Hex Value:</label>
-        <input type="text" id="mag" placeholder="Enter hex value">
+        <select id="mag">
+            <!-- Options will be populated by JavaScript -->
+        </select>
     </div>
     <div class="input-group">
         <label for="def">DEF Level:</label>
@@ -44,6 +46,17 @@
 
     <script src="mag_hex_gen.js"></script>
     <script>
+        const magSelect = document.getElementById('mag');
+
+        // Populate the dropdown with options from MAGS
+        for (const mag of MAGS.flat()) {
+            const [hexValue, name] = mag;
+            const option = document.createElement('option');
+            option.value = hexValue;
+            option.textContent = `${hexValue} - ${name}`;
+            magSelect.appendChild(option);
+        }
+
         async function generateHex() {
             const mag = document.getElementById('mag').value.toUpperCase();
             const defLvl = parseInt(document.getElementById('def').value, 10);

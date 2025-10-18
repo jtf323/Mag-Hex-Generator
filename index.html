@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mag Hex Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mag Hex Generator</h1>
+    <div class="input-group">
+        <label for="mag">Hex Value:</label>
+        <input type="text" id="mag" placeholder="Enter hex value">
+    </div>
+    <div class="input-group">
+        <label for="def">DEF Level:</label>
+        <input type="number" id="def" placeholder="Enter DEF level">
+    </div>
+    <div class="input-group">
+        <label for="pow">POW Level:</label>
+        <input type="number" id="pow" placeholder="Enter POW level">
+    </div>
+    <div class="input-group">
+        <label for="dex">DEX Level:</label>
+        <input type="number" id="dex" placeholder="Enter DEX level">
+    </div>
+    <div class="input-group">
+        <label for="mind">MIND Level:</label>
+        <input type="number" id="mind" placeholder="Enter MIND level">
+    </div>
+    <button onclick="generateHex()">Generate</button>
+
+    <h2>Result:</h2>
+    <p id="itemCode"></p>
+    <p id="parameters"></p>
+
+    <script src="mag_hex_gen.js"></script>
+    <script>
+        async function generateHex() {
+            const mag = document.getElementById('mag').value.toUpperCase();
+            const defLvl = parseInt(document.getElementById('def').value, 10);
+            const powLvl = parseInt(document.getElementById('pow').value, 10);
+            const dexLvl = parseInt(document.getElementById('dex').value, 10);
+            const mindLvl = parseInt(document.getElementById('mind').value, 10);
+
+            if (!MAGS.flat().some(item => item[0] === mag)) {
+                alert("The hex value does not exist in the table");
+                return;
+            }
+
+            const statList = [defLvl, powLvl, dexLvl, mindLvl];
+            const levels = defLvl + powLvl + dexLvl + mindLvl;
+
+            if (levels > 200) {
+                console.log("Warning, level exceeds 200");
+            }
+
+            const bytesList = ['02', mag, toHex(levels), 'D9'];
+            for (const stat of statList) {
+                const [expByte, lvlByte] = levelToHexBytes(stat);
+                bytesList.push(expByte);
+                bytesList.push(lvlByte);
+            }
+
+            document.getElementById('itemCode').innerText = "Item Code: " + bytesList.slice(0, 3).join(", ");
+            document.getElementById('parameters').innerText = "Parameters: " + bytesList.slice(3).join(", ");
+        }
+    </script>
+</body>
+</html>

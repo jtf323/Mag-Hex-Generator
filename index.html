@@ -4,51 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mag Hex Generator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .input-group {
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
-    <h1>Mag Hex Generator</h1>
-    <div class="input-group">
-        <label for="mag">Hex Value:</label>
-        <select id="mag">
-            <!-- Options will be populated by JavaScript -->
-        </select>
-    </div>
-    <div class="input-group">
-        <label for="def">DEF Level:</label>
-        <input type="number" id="def" placeholder="Enter DEF level">
-    </div>
-    <div class="input-group">
-        <label for="pow">POW Level:</label>
-        <input type="number" id="pow" placeholder="Enter POW level">
-    </div>
-    <div class="input-group">
-        <label for="dex">DEX Level:</label>
-        <input type="number" id="dex" placeholder="Enter DEX level">
-    </div>
-    <div class="input-group">
-        <label for="mind">MIND Level:</label>
-        <input type="number" id="mind" placeholder="Enter MIND level">
-    </div>
-    <button onclick="generateHex()">Generate</button>
+    <div class="container">
+        <h1 class="text-center mt-5">Mag Hex Generator</h1>
 
-    <h2>Result:</h2>
-    <p id="itemCode"></p>
-    <p id="parameters"></p>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Mag</span>
+            <select id="mag" class="form-control">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
 
+        <div class="form-floating mb-3">
+            <input type="text" id="def" class="form-control" placeholder="DEF Level">
+            <label for="def">DEF Level</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="text" id="pow" class="form-control" placeholder="POW Level">
+            <label for="pow">POW Level</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="text" id="dex" class="form-control" placeholder="DEX Level">
+            <label for="dex">DEX Level</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="text" id="mind" class="form-control" placeholder="MIND Level">
+            <label for="mind">MIND Level</label>
+        </div>
+
+        <button onclick="generateHex()" class="btn btn-primary mb-3">Generate</button>
+
+        <h2 class="mt-5">Result:</h2>
+        <div class="alert alert-warning" role="alert" style="display: none;" id="warning-div">
+            <p id="warningText" class="mb-3"></p>
+        </div>
+        <div class="alert alert-danger" role="alert" style="display: none;" id="error-div">
+            <p id="errorText" class="mb-3">There was an error processing your input</p>
+        </div>
+        <div class="alert alert-success" role="alert" style="display: none;" id="success-div">
+            <p id="itemCode" class="mb-3"></p>
+            <p id="parameters" class="mb-3"></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="mag_hex_gen.js"></script>
     <script>
-        const magSelect = document.getElementById('mag');
+        function hideAllMessages() {
+            document.getElementById("warning-div").style.display = 'none';
+            document.getElementById("error-div").style.display = 'none';
+            document.getElementById("success-div").style.display = 'none';
+        }
+
+        function displayError(message) {
+            var errorDiv = document.getElementById("error-div");
+            errorDiv.style.display = 'block';
+            document.getElementById('errorText').innerText = message;
+        }
+
+        function displayWarning(message) {
+            var warningDiv = document.getElementById("warning-div");
+            warningDiv.style.display = 'block';
+            document.getElementById('warningText').innerText = message;
+        }
+
+        function displaySuccess(itemCode, parameters) {
+            var successDiv = document.getElementById("success-div");
+            successDiv.style.display = 'block';
+            document.getElementById('itemCode').innerText = itemCode;
+            document.getElementById('parameters').innerText = parameters;
+        }
 
         // Populate the dropdown with options from MAGS
+        const magSelect = document.getElementById('mag');
         for (const mag of MAGS.flat()) {
             const [hexValue, name] = mag;
             const option = document.createElement('option');
@@ -58,6 +101,8 @@
         }
 
         async function generateHex() {
+            hideAllMessages();
+
             const mag = document.getElementById('mag').value.toUpperCase();
             const defLvl = parseInt(document.getElementById('def').value, 10);
             const powLvl = parseInt(document.getElementById('pow').value, 10);
@@ -65,26 +110,34 @@
             const mindLvl = parseInt(document.getElementById('mind').value, 10);
 
             if (!MAGS.flat().some(item => item[0] === mag)) {
-                alert("The hex value does not exist in the table");
+                displayError("The selected Mag hex value does not exist in the table");
                 return;
             }
+            
+            const isError = Number.isNaN(defLvl) || Number.isNaN(powLvl) || Number.isNaN(dexLvl) || Number.isNaN(mindLvl);
 
-            const statList = [defLvl, powLvl, dexLvl, mindLvl];
-            const levels = defLvl + powLvl + dexLvl + mindLvl;
+            if (isError) {
+                displayError("There was an error processing your input");
+            } else {
+                const statList = [defLvl, powLvl, dexLvl, mindLvl];
+                const levels = defLvl + powLvl + dexLvl + mindLvl;
 
-            if (levels > 200) {
-                console.log("Warning, level exceeds 200");
+                if (levels > 200) {
+                    displayWarning("Warning, level exceeds 200");
+                }
+
+                const bytesList = ['02', mag, toHex(levels), 'D9'];
+                for (const stat of statList) {
+                    const [expByte, lvlByte] = levelToHexBytes(stat);
+                    bytesList.push(expByte);
+                    bytesList.push(lvlByte);
+                }
+
+                displaySuccess(
+                    "Item Code: " + bytesList.slice(0, 3).join(", "),
+                    "Parameters: " + bytesList.slice(3).join(", ")
+                );
             }
-
-            const bytesList = ['02', mag, toHex(levels), 'D9'];
-            for (const stat of statList) {
-                const [expByte, lvlByte] = levelToHexBytes(stat);
-                bytesList.push(expByte);
-                bytesList.push(lvlByte);
-            }
-
-            document.getElementById('itemCode').innerText = "Item Code: " + bytesList.slice(0, 3).join(", ");
-            document.getElementById('parameters').innerText = "Parameters: " + bytesList.slice(3).join(", ");
         }
     </script>
 </body>
